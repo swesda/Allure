@@ -1,5 +1,6 @@
 package ru.netology.delivery.test;
 
+import com.codeborne.selenide.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,11 +29,6 @@ class DeliveryTest {
         var firstMeetingDate = DataGenerator.generateDate(daysToAddForFirstMeeting);
         var daysToAddForSecondMeeting = 7;
         var secondMeetingDate = DataGenerator.generateDate(daysToAddForSecondMeeting);
-        // TODO: добавить логику теста в рамках которого будет выполнено планирование и перепланирование встречи.
-        // Для заполнения полей формы можно использовать пользователя validUser и строки с датами в переменных
-        // firstMeetingDate и secondMeetingDate. Можно также вызывать методы generateCity(locale),
-        // generateName(locale), generatePhone(locale) для генерации и получения в тесте соответственно города,
-        // имени и номера телефона без создания пользователя в методе generateUser(String locale) в датагенераторе
         $("[data-test-id='city'] input").setValue(validUser.getCity());
         $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), BACK_SPACE);
         $("[data-test-id='date'] input").setValue(firstMeetingDate);
@@ -44,9 +40,13 @@ class DeliveryTest {
         $("[data-test-id=success-notification] [class=notification__content]").shouldHave(text("Встреча успешно запланирована на\n" + firstMeetingDate));
         $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), BACK_SPACE);
         $("[data-test-id='date'] input").setValue(secondMeetingDate);
-        $("[class='button__text']").click();
-        $("[data-test-id=success-notification]").shouldBe(visible, Duration.ofSeconds(40));
-        $("[data-test-id=replan-notification] [class=notification__content]").shouldHave(text("У вас уже запланирована встреча на другую дату. Перепланировать?")).click();
-        $("[data-test-id=success-notification] [class=notification__content]").shouldHave(text("Встреча успешно запланирована на\n" + secondMeetingDate));
+        $("button.button").click();
+        $("[data-test-id=replan-notification]")
+                .shouldHave(Condition.text("У вас уже запланирована встреча на другую дату"))
+                .shouldBe(Condition.visible);
+        $("[data-test-id=replan-notification] button").click();
+        $("[data-test-id=success-notification]")
+                .shouldHave(Condition.text("Встреча успешно запланирована на " + secondMeetingDate))
+                .shouldBe(Condition.visible);
     }
 }
